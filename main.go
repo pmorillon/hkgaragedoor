@@ -7,19 +7,24 @@ import (
 
 	"github.com/brutella/hc"
 	"github.com/brutella/hc/accessory"
+	"github.com/brutella/hc/log"
 	"github.com/brutella/hc/characteristic"
 	"github.com/pmorillon/hkgaragedoor/myacc"
-	"github.com/prometheus/common/log"
 )
 
 var (
-	accessoryPin = flag.String("pin", "11122333", "HomeKit accessory pin")
+	accessoryPinArg = flag.String("pin", "11122333", "HomeKit accessory pin.")
+	debugArg = flag.Bool("debug", false, "Debug mode.")
 )
 
 func main() {
 	fmt.Println("Starting HomeKit Garage Door controller...")
 	flag.Parse()
-	
+
+	if *debugArg {
+		log.Debug.Enable()
+	}
+
 	info := accessory.Info{
 		Name: "Garage Door",
 		Model: "Raspberry Pi",
@@ -28,9 +33,9 @@ func main() {
 
 	acc := myacc.NewGarageDoor(info)
 
-	t, err := hc.NewIPTransport(hc.Config{Pin: *accessoryPin}, acc.Accessory)
+	t, err := hc.NewIPTransport(hc.Config{Pin: *accessoryPinArg}, acc.Accessory)
 	if err != nil {
-		log.Fatal(err)
+		log.Info.Panic(err)
 	}
 
 	acc.GarageDoorOpener.CurrentDoorState.SetValue(characteristic.CurrentDoorStateClosed)
